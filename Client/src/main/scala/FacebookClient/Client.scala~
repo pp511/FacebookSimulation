@@ -1,0 +1,49 @@
+package Client
+import akka.actor.ActorSystem
+import spray.http.BasicHttpCredentials
+import spray.client.pipelining._
+import akka.actor.Actor
+import akka.actor.Cancellable
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
+//import org.apache.commons.httpclient.util.URIUtil
+import scala.util.Random
+import spray.http.HttpRequest
+import java.io.RandomAccessFile
+import java.util.Date
+import java.io.File
+import akka.actor.Props
+import spray.http.HttpResponse
+import Client._
+
+object ClientSimulator extends App {
+
+  implicit val system = ActorSystem()
+
+  import system.dispatcher
+
+  val pipeline = sendReceive
+
+  Global.totalUsersCount = 50
+
+  for (i <- 0 to Global.totalUsersCount) {
+    val actor = system.actorOf(Props(new User(i,Global.totalUsersCount)),"" + i)
+ //   Thread.sleep(100)
+  }
+  for (i <- 0 to Global.totalUsersCount) {
+    var actor = system.actorSelection("/user/" + i)
+    Thread.sleep(100)
+
+    actor ! UserStart
+  }
+//  Thread.sleep(60000L)
+
+  for (i <- 1 to Global.totalUsersCount) {
+    var actor = system.actorSelection("/user/" + i)
+    Thread.sleep(100)
+
+    actor ! UserStop
+  }
+
+ //  pipeline(Get(" http://localhost:8080/stop"))
+}
